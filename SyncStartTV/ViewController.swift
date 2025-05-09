@@ -164,10 +164,3 @@ class ViewController: UIViewController {
 // Used for the KVO.
 private var firstPlayerKVOContext = 0
 private var secondPlayerKVOContext = 0
-
-extension ViewController {
-    enum ButtonSide {
-        case left
-        case right
-    }
-}
