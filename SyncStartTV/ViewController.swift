@@ -8,15 +8,13 @@
 import UIKit
 import AVFoundation
 
-class ViewController: UIViewController, NetServiceDelegate {
-    
+class ViewController: UIViewController {
     let kVideoButtonTagBase: Int = 100
     let kVideoViewTagBase: Int = 200
     
     @IBOutlet weak var leftButton: UIButton!
     @IBOutlet weak var rightButton: UIButton!
-    
-    var resolvingService: NetService?
+
     var players: [AVPlayer]
     var items: [AVPlayerItem]
     var timeToDateMapping: [TimeInterval]
@@ -26,7 +24,6 @@ class ViewController: UIViewController, NetServiceDelegate {
     var used: Bool
     
     required init?(coder: NSCoder) {
-        self.resolvingService = nil
         self.players = []
         self.items = []
         self.timeToDateMapping = []
@@ -50,17 +47,10 @@ class ViewController: UIViewController, NetServiceDelegate {
     }
     
     /// Provide the network address of the target stream to the currently-initializing player
-    func setupPlayer(hostName: String, port: Int, path: String) {
+    func setupPlayer(url: URL) {
         guard let index = players.indices.last else { return }
-        
-        /* How to Bonjour-advertise a remote site, from a Mac in Terminal:
-         dns-sd -P "<title>" "_http._tcp" "" <port> <host> <IP> <TXT>
-         for example,
-         dns-sd -P "My live stream on example.com" "_http._tcp" "" 80 live.example.com live.example.com path=/LIVE/master.m3u8
-         */
-        
-        let url = String(format: "http://%@:%d%@", hostName, port, path.isEmpty ? "/" : path)
-        let asset = AVAsset(url: URL(string: url)!)
+
+        let asset = AVAsset(url: url)
         items.append(AVPlayerItem(asset: asset))
         if index == 0 {
             items[index].addObserver(self, forKeyPath: "loadedTimeRanges", options: [], context: &firstPlayerKVOContext)
@@ -73,46 +63,32 @@ class ViewController: UIViewController, NetServiceDelegate {
         players[index].isMuted = true // do not attempt to mix audio
         players[index].replaceCurrentItem(with: items[index])
     }
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if (sender as? UIButton) === leftButton {
+            (segue.destination as? BrowseViewController)?.sourceButtonSide = .left
+        } else if (sender as? UIButton) === rightButton {
+            (segue.destination as? BrowseViewController)?.sourceButtonSide = .right
+        }
+    }
     
     /// Retrieve the chosen service record advertising the stream from the BrowseViewController when it is dismissed
     @IBAction func myUnwindAction(unwindSegue: UIStoryboardSegue) {
         if let browserView = unwindSegue.source as? BrowseViewController {
-            resolvingService = browserView.selectedService
-        }
-    }
-    
-    /// When focus returns to UIButton following a Browse segue, initiate playback in the appropriate view
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        super.didUpdateFocus(in: context, with: coordinator)
-        
-        if context.previouslyFocusedView == nil {
-            if leftButton.isFocused || rightButton.isFocused {
-                if resolvingService != nil {
-                    bindNewPlayerToView(buttonTag: context.nextFocusedView!.tag)
-                    resolvingService!.delegate = self
-                    resolvingService!.resolve(withTimeout: 5.0)
-                    
-                    let buttonToDisable = leftButton.isFocused ? leftButton : rightButton
-                    buttonToDisable?.isEnabled = false // disable button to block reselection
-                    setNeedsFocusUpdate()
-                }
+            if let lastSelectedURL = browserView.selectedURL {
+                guard let sourceButton = switch browserView.sourceButtonSide {
+                case .left: leftButton
+                case .right: rightButton
+                case .none: nil
+                } else { return }
+                bindNewPlayerToView(buttonTag: sourceButton.tag)
+
+                sourceButton.isEnabled = false // disable button to block reselection
+                setNeedsFocusUpdate()
+
+                setupPlayer(url: lastSelectedURL)
             }
         }
-    }
-    
-    /// NetServiceDelegate callback, called when Bonjour service is resolved
-    func netServiceDidResolveAddress(_ sender: NetService) {
-      var path = ""
-        if let txtRecordData = sender.txtRecordData() {
-            let txtDict = NetService.dictionary(fromTXTRecord: txtRecordData)
-            if let pathData = txtDict["path"] {
-                path = String(data: pathData, encoding: .utf8)!
-            }
-            
-        }
-      
-      setupPlayer(hostName: "127.0.0.1", port: 80, path: path)
-        
     }
     
     func getBufferedDurationAheadOf(item: AVPlayerItem, mark: CMTime) -> Double {
@@ -212,3 +188,9 @@ class ViewController: UIViewController, NetServiceDelegate {
 private var firstPlayerKVOContext = 0
 private var secondPlayerKVOContext = 0
 
+extension ViewController {
+    enum ButtonSide {
+        case left
+        case right
+    }
+}

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder.AppleTV.Storyboard" version="3.0" toolsVersion="13196" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
-    <device id="appleTV" orientation="landscape">
-        <adaptation id="light"/>
-    </device>
+<document type="com.apple.InterfaceBuilder.AppleTV.Storyboard" version="3.0" toolsVersion="23727" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="appleTV" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <deployment identifier="tvOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -24,7 +23,7 @@
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="tb0-C1-aVa">
                                 <rect key="frame" x="350" y="834" width="1220" height="86"/>
                                 <subviews>
-                                    <button opaque="NO" tag="100" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SBY-sY-jTc">
+                                    <button opaque="NO" tag="100" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SBY-sY-jTc">
                                         <rect key="frame" x="0.0" y="0.0" width="400" height="86"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="400" id="2NZ-3g-JSX"/>
@@ -36,7 +35,7 @@
                                             <segue destination="NP4-xN-ReH" kind="presentation" id="FeA-k0-CKS"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" tag="101" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2qv-yu-c02">
+                                    <button opaque="NO" tag="101" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2qv-yu-c02">
                                         <rect key="frame" x="820" y="0.0" width="400" height="86"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="86" id="ngP-f1-kRV"/>
@@ -75,6 +74,7 @@
                                 </subviews>
                             </stackView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="8Fg-hC-7Cp"/>
                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="NmF-IQ-U7X" firstAttribute="top" secondItem="8Fg-hC-7Cp" secondAttribute="top" constant="90" id="99v-KD-cyI"/>
@@ -84,7 +84,6 @@
                             <constraint firstItem="NmF-IQ-U7X" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="pjS-bc-03F"/>
                             <constraint firstItem="8Fg-hC-7Cp" firstAttribute="bottom" secondItem="tb0-C1-aVa" secondAttribute="bottom" constant="100" id="vZV-rY-nP4"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="8Fg-hC-7Cp"/>
                     </view>
                     <connections>
                         <outlet property="leftButton" destination="SBY-sY-jTc" id="99P-Qd-wBj"/>
@@ -114,12 +113,12 @@
                                 <sections/>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Select an HLS stream" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XPv-Qo-dXW">
-                                <rect key="frame" x="776" y="126" width="368" height="46"/>
+                                <rect key="frame" x="781" y="126" width="358" height="46"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wtw-Go-huW">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wtw-Go-huW">
                                 <rect key="frame" x="861" y="900" width="198" height="86"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="86" id="BWf-ul-18C"/>
@@ -132,6 +131,7 @@
                                 </connections>
                             </button>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="c2L-kF-gwh"/>
                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="c2L-kF-gwh" firstAttribute="bottom" secondItem="Wtw-Go-huW" secondAttribute="bottom" constant="34" id="LZx-GU-bD5"/>
@@ -139,7 +139,6 @@
                             <constraint firstItem="XPv-Qo-dXW" firstAttribute="top" secondItem="c2L-kF-gwh" secondAttribute="top" constant="66" id="equ-EB-0G4"/>
                             <constraint firstItem="Wtw-Go-huW" firstAttribute="centerX" secondItem="fSI-c2-Gx0" secondAttribute="centerX" id="j9u-AJ-ATc"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="c2L-kF-gwh"/>
                     </view>
                     <connections>
                         <outlet property="serviceTable" destination="5ml-cC-I0e" id="q2k-r3-BYM"/>
@@ -152,6 +151,6 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="FeA-k0-CKS"/>
+        <segue reference="fDt-rV-Qt0"/>
     </inferredMetricsTieBreakers>
 </document>
