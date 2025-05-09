@@ -108,15 +108,10 @@ class ViewController: UIViewController {
     /// Check if player[1] has buffered enough to start playing in sync with player[0]
     func tryToStartSecondPlayerInSync() {
         // The player needs a bit buffered ahead of the common start time in order to start cleanly
-        let (timeInStarterCorrespondingToNowInRunner, currentDateOfRunner, _) = getRunnerTimeForStarter()
+        let (timeInStarterCorrespondingToNowInRunner, _, currentHostTime) = getRunnerTimeForStarter()
         let timeAhead = getBufferedDurationAheadOf(item: items[1], mark: timeInStarterCorrespondingToNowInRunner)
-        if timeAhead >= 1.0 {
-            // Move the playhead to the start position and then set rate to 1.0
-            players[1].currentItem!.seek(to: currentDateOfRunner, completionHandler: { _ in
-                let (timeInStarterCorrespondingToNowInRunner, _, currentHostTime) = self.getRunnerTimeForStarter()
-                self.players[1].setRate(1.0, time: timeInStarterCorrespondingToNowInRunner, atHostTime: currentHostTime)
-                print("CT", currentHostTime)
-            })
+        if timeAhead >= 1.0 && players[0].timeControlStatus == .playing {
+            players[1].setRate(1.0, time: timeInStarterCorrespondingToNowInRunner, atHostTime: currentHostTime)
         } else {
             let when = DispatchTime.now() + .milliseconds(200)
             DispatchQueue.main.asyncAfter(deadline: when, execute: {
