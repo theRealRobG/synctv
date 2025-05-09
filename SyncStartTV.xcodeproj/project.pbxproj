@@ -10,7 +10,6 @@
 		DB45E9F61ECF629600C4B1AF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB45E9F51ECF629600C4B1AF /* AppDelegate.swift */; };
 		DB45E9F81ECF629600C4B1AF /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB45E9F71ECF629600C4B1AF /* ViewController.swift */; };
 		DB45E9FB1ECF629600C4B1AF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DB45E9F91ECF629600C4B1AF /* Main.storyboard */; };
-		DB45EA051ECF8F5100C4B1AF /* BrowseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB45EA041ECF8F5100C4B1AF /* BrowseViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,7 +20,6 @@
 		DB45E9F71ECF629600C4B1AF /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		DB45E9FA1ECF629600C4B1AF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		DB45E9FE1ECF629600C4B1AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		DB45EA041ECF8F5100C4B1AF /* BrowseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseViewController.swift; sourceTree = "<group>"; };
 		DB45EA351ED4F63400C4B1AF /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -68,7 +66,6 @@
 			children = (
 				DB45E9F51ECF629600C4B1AF /* AppDelegate.swift */,
 				DB45E9F71ECF629600C4B1AF /* ViewController.swift */,
-				DB45EA041ECF8F5100C4B1AF /* BrowseViewController.swift */,
 				DB45E9F91ECF629600C4B1AF /* Main.storyboard */,
 				DB45E9FE1ECF629600C4B1AF /* Info.plist */,
 			);
@@ -154,7 +151,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DB45EA051ECF8F5100C4B1AF /* BrowseViewController.swift in Sources */,
 				DB45E9F81ECF629600C4B1AF /* ViewController.swift in Sources */,
 				DB45E9F61ECF629600C4B1AF /* AppDelegate.swift in Sources */,
 			);

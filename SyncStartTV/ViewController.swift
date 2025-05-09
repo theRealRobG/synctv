@@ -8,15 +8,10 @@
 import UIKit
 import AVFoundation
 
-class ViewController: UIViewController, NetServiceDelegate {
+class ViewController: UIViewController {
+    @IBOutlet weak var topPlayerView: UIView!
+    @IBOutlet weak var bottomPlayerView: UIView!
     
-    let kVideoButtonTagBase: Int = 100
-    let kVideoViewTagBase: Int = 200
-    
-    @IBOutlet weak var leftButton: UIButton!
-    @IBOutlet weak var rightButton: UIButton!
-    
-    var resolvingService: NetService?
     var players: [AVPlayer]
     var items: [AVPlayerItem]
     var timeToDateMapping: [TimeInterval]
@@ -26,7 +21,6 @@ class ViewController: UIViewController, NetServiceDelegate {
     var used: Bool
     
     required init?(coder: NSCoder) {
-        self.resolvingService = nil
         self.players = []
         self.items = []
         self.timeToDateMapping = []
@@ -36,31 +30,35 @@ class ViewController: UIViewController, NetServiceDelegate {
         self.used = false
         super.init(coder: coder)
     }
-    
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        startNewPlayer()
+    }
+
+    func startNewPlayer() {
+        let videoView = players.count == 0 ? topPlayerView : bottomPlayerView
+        bindNewPlayerToView(videoView: videoView!)
+        setupPlayer(
+            url: URL(string: "https://demo.unified-streaming.com/k8s/live/stable/scte35.isml/master.m3u8?hls_fmp4")!
+        )
+    }
+
     /// Create a new player that is bound to the view corresponding to buttonTag
-    func bindNewPlayerToView(buttonTag: Int) {
+    func bindNewPlayerToView(videoView: UIView) {
         let player = AVPlayer()
         players.append(player)
         
         let playerLayer = AVPlayerLayer(player: player)
-        if let videoView = view.viewWithTag(buttonTag - kVideoButtonTagBase + kVideoViewTagBase) {
-            videoView.layer.addSublayer(playerLayer)
-        }
-        playerLayer.frame = CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 960, height: 540))
+        videoView.layer.addSublayer(playerLayer)
+        playerLayer.frame = videoView.bounds
     }
     
     /// Provide the network address of the target stream to the currently-initializing player
-    func setupPlayer(hostName: String, port: Int, path: String) {
+    func setupPlayer(url: URL) {
         guard let index = players.indices.last else { return }
-        
-        /* How to Bonjour-advertise a remote site, from a Mac in Terminal:
-         dns-sd -P "<title>" "_http._tcp" "" <port> <host> <IP> <TXT>
-         for example,
-         dns-sd -P "My live stream on example.com" "_http._tcp" "" 80 live.example.com live.example.com path=/LIVE/master.m3u8
-         */
-        
-        let url = String(format: "http://%@:%d%@", hostName, port, path.isEmpty ? "/" : path)
-        let asset = AVAsset(url: URL(string: url)!)
+
+        let asset = AVAsset(url: url)
         items.append(AVPlayerItem(asset: asset))
         if index == 0 {
             items[index].addObserver(self, forKeyPath: "loadedTimeRanges", options: [], context: &firstPlayerKVOContext)
@@ -70,49 +68,8 @@ class ViewController: UIViewController, NetServiceDelegate {
             items[index].addObserver(self, forKeyPath: "status", options: [], context: &secondPlayerKVOContext)
         }
         
-        players[index].isMuted = true // do not attempt to mix audio
+//        players[index].isMuted = true // do not attempt to mix audio
         players[index].replaceCurrentItem(with: items[index])
-    }
-    
-    /// Retrieve the chosen service record advertising the stream from the BrowseViewController when it is dismissed
-    @IBAction func myUnwindAction(unwindSegue: UIStoryboardSegue) {
-        if let browserView = unwindSegue.source as? BrowseViewController {
-            resolvingService = browserView.selectedService
-        }
-    }
-    
-    /// When focus returns to UIButton following a Browse segue, initiate playback in the appropriate view
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        super.didUpdateFocus(in: context, with: coordinator)
-        
-        if context.previouslyFocusedView == nil {
-            if leftButton.isFocused || rightButton.isFocused {
-                if resolvingService != nil {
-                    bindNewPlayerToView(buttonTag: context.nextFocusedView!.tag)
-                    resolvingService!.delegate = self
-                    resolvingService!.resolve(withTimeout: 5.0)
-                    
-                    let buttonToDisable = leftButton.isFocused ? leftButton : rightButton
-                    buttonToDisable?.isEnabled = false // disable button to block reselection
-                    setNeedsFocusUpdate()
-                }
-            }
-        }
-    }
-    
-    /// NetServiceDelegate callback, called when Bonjour service is resolved
-    func netServiceDidResolveAddress(_ sender: NetService) {
-      var path = ""
-        if let txtRecordData = sender.txtRecordData() {
-            let txtDict = NetService.dictionary(fromTXTRecord: txtRecordData)
-            if let pathData = txtDict["path"] {
-                path = String(data: pathData, encoding: .utf8)!
-            }
-            
-        }
-      
-      setupPlayer(hostName: "127.0.0.1", port: 80, path: path)
-        
     }
     
     func getBufferedDurationAheadOf(item: AVPlayerItem, mark: CMTime) -> Double {
@@ -151,15 +108,10 @@ class ViewController: UIViewController, NetServiceDelegate {
     /// Check if player[1] has buffered enough to start playing in sync with player[0]
     func tryToStartSecondPlayerInSync() {
         // The player needs a bit buffered ahead of the common start time in order to start cleanly
-        let (timeInStarterCorrespondingToNowInRunner, currentDateOfRunner, _) = getRunnerTimeForStarter()
+        let (timeInStarterCorrespondingToNowInRunner, _, currentHostTime) = getRunnerTimeForStarter()
         let timeAhead = getBufferedDurationAheadOf(item: items[1], mark: timeInStarterCorrespondingToNowInRunner)
-        if timeAhead >= 1.0 {
-            // Move the playhead to the start position and then set rate to 1.0
-            players[1].currentItem!.seek(to: currentDateOfRunner, completionHandler: { _ in
-                let (timeInStarterCorrespondingToNowInRunner, _, currentHostTime) = self.getRunnerTimeForStarter()
-                self.players[1].setRate(1.0, time: timeInStarterCorrespondingToNowInRunner, atHostTime: currentHostTime)
-                print("CT", currentHostTime)
-            })
+        if timeAhead >= 1.0 && players[0].timeControlStatus == .playing {
+            players[1].setRate(1.0, time: timeInStarterCorrespondingToNowInRunner, atHostTime: currentHostTime)
         } else {
             let when = DispatchTime.now() + .milliseconds(200)
             DispatchQueue.main.asyncAfter(deadline: when, execute: {
@@ -186,6 +138,7 @@ class ViewController: UIViewController, NetServiceDelegate {
                 seekToLiveByDate(player: players[0])
                 players[0].rate = 1.0 // and then start playing as soon as possible
                 startedFirst = true
+                startNewPlayer()
             }
         } else if context == &secondPlayerKVOContext { // this is the second player to be selected:
             // once it is ready to play, move it to time of first player and start it
@@ -211,4 +164,3 @@ class ViewController: UIViewController, NetServiceDelegate {
 // Used for the KVO.
 private var firstPlayerKVOContext = 0
 private var secondPlayerKVOContext = 0
-
