@@ -107,7 +107,6 @@ class ViewController: UIViewController {
     
     /// Check if player[1] has buffered enough to start playing in sync with player[0]
     func tryToStartSecondPlayerInSync() {
-        players[1].automaticallyWaitsToMinimizeStalling = false
         // The player needs a bit buffered ahead of the common start time in order to start cleanly
         let (timeInStarterCorrespondingToNowInRunner, currentDateOfRunner, _) = getRunnerTimeForStarter()
         let timeAhead = getBufferedDurationAheadOf(item: items[1], mark: timeInStarterCorrespondingToNowInRunner)
