@@ -9,12 +9,9 @@ import UIKit
 import AVFoundation
 
 class ViewController: UIViewController {
-    let kVideoButtonTagBase: Int = 100
-    let kVideoViewTagBase: Int = 200
+    @IBOutlet weak var topPlayerView: UIView!
+    @IBOutlet weak var bottomPlayerView: UIView!
     
-    @IBOutlet weak var leftButton: UIButton!
-    @IBOutlet weak var rightButton: UIButton!
-
     var players: [AVPlayer]
     var items: [AVPlayerItem]
     var timeToDateMapping: [TimeInterval]
@@ -33,17 +30,28 @@ class ViewController: UIViewController {
         self.used = false
         super.init(coder: coder)
     }
-    
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        startNewPlayer()
+    }
+
+    func startNewPlayer() {
+        let videoView = players.count == 0 ? topPlayerView : bottomPlayerView
+        bindNewPlayerToView(videoView: videoView!)
+        setupPlayer(
+            url: URL(string: "https://demo.unified-streaming.com/k8s/live/stable/scte35.isml/master.m3u8?hls_fmp4")!
+        )
+    }
+
     /// Create a new player that is bound to the view corresponding to buttonTag
-    func bindNewPlayerToView(buttonTag: Int) {
+    func bindNewPlayerToView(videoView: UIView) {
         let player = AVPlayer()
         players.append(player)
         
         let playerLayer = AVPlayerLayer(player: player)
-        if let videoView = view.viewWithTag(buttonTag - kVideoButtonTagBase + kVideoViewTagBase) {
-            videoView.layer.addSublayer(playerLayer)
-        }
-        playerLayer.frame = CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 960, height: 540))
+        videoView.layer.addSublayer(playerLayer)
+        playerLayer.frame = videoView.bounds
     }
     
     /// Provide the network address of the target stream to the currently-initializing player
@@ -60,35 +68,8 @@ class ViewController: UIViewController {
             items[index].addObserver(self, forKeyPath: "status", options: [], context: &secondPlayerKVOContext)
         }
         
-        players[index].isMuted = true // do not attempt to mix audio
+//        players[index].isMuted = true // do not attempt to mix audio
         players[index].replaceCurrentItem(with: items[index])
-    }
-
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if (sender as? UIButton) === leftButton {
-            (segue.destination as? BrowseViewController)?.sourceButtonSide = .left
-        } else if (sender as? UIButton) === rightButton {
-            (segue.destination as? BrowseViewController)?.sourceButtonSide = .right
-        }
-    }
-    
-    /// Retrieve the chosen service record advertising the stream from the BrowseViewController when it is dismissed
-    @IBAction func myUnwindAction(unwindSegue: UIStoryboardSegue) {
-        if let browserView = unwindSegue.source as? BrowseViewController {
-            if let lastSelectedURL = browserView.selectedURL {
-                guard let sourceButton = switch browserView.sourceButtonSide {
-                case .left: leftButton
-                case .right: rightButton
-                case .none: nil
-                } else { return }
-                bindNewPlayerToView(buttonTag: sourceButton.tag)
-
-                sourceButton.isEnabled = false // disable button to block reselection
-                setNeedsFocusUpdate()
-
-                setupPlayer(url: lastSelectedURL)
-            }
-        }
     }
     
     func getBufferedDurationAheadOf(item: AVPlayerItem, mark: CMTime) -> Double {
@@ -126,6 +107,7 @@ class ViewController: UIViewController {
     
     /// Check if player[1] has buffered enough to start playing in sync with player[0]
     func tryToStartSecondPlayerInSync() {
+        players[1].automaticallyWaitsToMinimizeStalling = false
         // The player needs a bit buffered ahead of the common start time in order to start cleanly
         let (timeInStarterCorrespondingToNowInRunner, currentDateOfRunner, _) = getRunnerTimeForStarter()
         let timeAhead = getBufferedDurationAheadOf(item: items[1], mark: timeInStarterCorrespondingToNowInRunner)
@@ -162,6 +144,7 @@ class ViewController: UIViewController {
                 seekToLiveByDate(player: players[0])
                 players[0].rate = 1.0 // and then start playing as soon as possible
                 startedFirst = true
+                startNewPlayer()
             }
         } else if context == &secondPlayerKVOContext { // this is the second player to be selected:
             // once it is ready to play, move it to time of first player and start it
